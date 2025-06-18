@@ -72,6 +72,7 @@ class Llama:
         use_mlock: bool = False,
         kv_overrides: Optional[Dict[str, Union[bool, int, float, str]]] = None,
         # Context Params
+        n_seq_max: int = 1,
         seed: int = llama_cpp.LLAMA_DEFAULT_SEED,
         n_ctx: int = 512,
         n_batch: int = 512,
@@ -155,6 +156,7 @@ class Llama:
             use_mmap: Use mmap if possible.
             use_mlock: Force the system to keep the model in RAM.
             kv_overrides: Key-value overrides for the model.
+            n_seq_max: Maximum number of sequences to process in parallel
             seed: RNG seed, -1 for random
             n_ctx: Text context, 0 = from model
             n_batch: Prompt processing maximum batch size
@@ -312,6 +314,7 @@ class Llama:
         # Context Params
         self.context_params = llama_cpp.llama_context_default_params()
         self.context_params.n_ctx = n_ctx
+        self.context_params.n_seq_max = n_seq_max
         self.context_params.n_batch = self.n_batch
         self.context_params.n_ubatch = min(self.n_batch, n_ubatch)
         self.context_params.n_threads = self.n_threads
@@ -403,7 +406,7 @@ class Llama:
                 internals.LlamaBatch(
                     n_tokens=self.n_batch,
                     embd=0,
-                    n_seq_max=self.context_params.n_ctx,
+                    n_seq_max=self.context_params.n_seq_max,
                     verbose=self.verbose,
                 )
             )
@@ -2077,6 +2080,7 @@ class Llama:
             kv_overrides=self.kv_overrides,
             # Context Params
             seed=self._seed,
+            n_seq_max=self.context_params.n_seq_max,
             n_ctx=self.context_params.n_ctx,
             n_batch=self.n_batch,
             n_ubatch=self.context_params.n_ubatch,
