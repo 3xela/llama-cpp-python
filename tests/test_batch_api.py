@@ -3,7 +3,6 @@
 from pathlib import Path
 import traceback
 import time
-from typing import List
 
 from llama_cpp import Llama
 import llama_cpp
@@ -25,11 +24,11 @@ def test_batch_api_parallel():
         
         print(f"Model loaded with n_seq_max={llama.context_params.n_seq_max}")
         
-        # Test prompts
+        # Test prompts - longer and more diverse to better test parallel processing
         prompts = [
-            "The capital of France is",
-            "Python is a programming language that", 
-            "Machine learning is"
+            "Write a detailed explanation about the history and cultural significance of the Eiffel Tower in Paris, France. Include information about its construction, architect Gustave Eiffel, and how it became an iconic symbol of France. Discuss the initial public reception and how opinions changed over time.",
+            "Explain the fundamental concepts of object-oriented programming in Python, including classes, objects, inheritance, polymorphism, and encapsulation. Provide practical examples of how these concepts are implemented in Python code and discuss the advantages of using OOP principles in software development.",
+            "Describe the current state of machine learning and artificial intelligence, focusing on deep learning architectures, natural language processing, computer vision, and their real-world applications. Discuss recent breakthroughs, current limitations, and potential future developments in the field."
         ]
         
         # Tokenize prompts
@@ -71,9 +70,6 @@ def test_batch_api_parallel():
         
         # Get logits for each sequence
         for seq_id in range(len(prompts)):
-            # Find the last token position for this sequence
-            last_pos = len(tokenized_prompts[seq_id]) - 1
-            
             # Get logits (this is simplified - real implementation would need proper indexing)
             logits = llama_cpp.llama_get_logits_ith(llama.ctx, seq_id)
             if logits:
@@ -104,9 +100,9 @@ def test_sequence_isolation():
             verbose=False
         )
         
-        # Two different conversation contexts
-        seq_0_prompt = "You are a helpful assistant. Hello!"
-        seq_1_prompt = "You are a grumpy robot. Hello!"
+        # Two different conversation contexts - longer and more distinct
+        seq_0_prompt = "You are a knowledgeable history professor specializing in European medieval history. A student asks you: 'Can you explain the causes and consequences of the Black Death pandemic that swept through Europe in the 14th century? How did it change European society?'"
+        seq_1_prompt = "You are a sarcastic and grumpy tech support robot who is having a bad day. A user contacts you saying: 'My computer is running slowly and I keep getting pop-up ads. Can you help me fix this problem?'"
         
         # Tokenize
         seq_0_tokens = llama.tokenize(seq_0_prompt.encode('utf-8'))
